@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize};
 
 #[derive(Debug, Deserialize)]
 pub struct GithubResponse {
@@ -24,7 +24,8 @@ pub struct PinnedItems {
 #[derive(Debug, Deserialize)]
 pub struct Repo {
     pub name: String,
-    pub description: Option<String>,
+    #[serde(default)]
+    pub description: String,
     #[serde(rename = "stargazerCount")]
     pub stargazer_count: u32,
     pub url: String,

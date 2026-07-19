@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nnt@portfolio:~$</title>
+    <meta name="description" content="SRE / Infra / Security-leaning Systems Engineer. Building systems from the metal up — kernels, BGP, and backend services.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        matrix: {
+                            DEFAULT: '#00ff41',
+                            dark: '#008f11',
+                            glow: '#39ff14'
+                        },
+                        terminal: {
+                            bg: '#0a0a0a',
+                            black: '#000000',
+                            text: '#e4e4e4',
+                            dim: '#6e6e6e'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        crt: ['VT323', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styles */
+        body {
+            background-color: #000000;
+            font-family: 'JetBrains Mono', monospace;
+            color: #e4e4e4;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* CRT Flicker */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+        @keyframes flicker { 0% { opacity: 0.27861; } 5% { opacity: 0.34769; } 10% { opacity: 0.23604; } 15% { opacity: 0.90626; } 20% { opacity: 0.18128; } 25% { opacity: 0.83891; } 30% { opacity: 0.65583; } 35% { opacity: 0.67807; } 40% { opacity: 0.26559; } 45% { opacity: 0.84693; } 50% { opacity: 0.96019; } 55% { opacity: 0.08594; } 60% { opacity: 0.20313; } 65% { opacity: 0.71988; } 70% { opacity: 0.53455; } 75% { opacity: 0.37288; } 80% { opacity: 0.71428; } 85% { opacity: 0.70419; } 90% { opacity: 0.7003; } 95% { opacity: 0.36108; } 100% { opacity: 0.24387; } }
+
+        /* Text Glitch Effect */
+        .glitch {
+            position: relative;
+            color: #fff;
+            text-shadow: 0 0 5px #00ff41;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(15px, 9999px, 43px, 0); }
+            20% { clip: rect(30px, 9999px, 16px, 0); }
+            40% { clip: rect(92px, 9999px, 65px, 0); }
+            60% { clip: rect(4px, 9999px, 18px, 0); }
+            80% { clip: rect(72px, 9999px, 20px, 0); }
+            100% { clip: rect(44px, 9999px, 54px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(78px, 9999px, 93px, 0); }
+            20% { clip: rect(45px, 9999px, 25px, 0); }
+            40% { clip: rect(2px, 9999px, 12px, 0); }
+            60% { clip: rect(65px, 9999px, 87px, 0); }
+            80% { clip: rect(34px, 9999px, 67px, 0); }
+            100% { clip: rect(90px, 9999px, 45px, 0); }
+        }
+
+        /* Blinking Cursor */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background-color: #00ff41;
+            animation: blink 1s steps(2) infinite;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+        /* Terminal Window */
+        .terminal-window {
+            border: 1px solid #1a1a1a;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(4px);
+        }
+        .terminal-header {
+            background: #111;
+            border-bottom: 1px solid #1a1a1a;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Hover Glow */
+        .link-hover {
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #e4e4e4;
+            border-bottom: 1px dotted transparent;
+        }
+        .link-hover:hover {
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+            border-bottom: 1px dotted #00ff41;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #111; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff41; }
+
+        /* Fade in on Scroll */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* Selection */
+        ::selection { background: #00ff41; color: #000; }
+    </style>
+</head>
+<body class="font-mono text-sm md:text-base">
+
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-40 bg-black border-b border-matrix-dark/30">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center text-xs">
+        <a href="#top" class="text-matrix glow">
+            [ root@nnt ]: /#
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="#projects" class="link-hover">~/projects</a>
+            <a href="#timeline" class="link-hover">~/timeline</a>
+            <a href="#writing" class="link-hover">~/blog</a>
+            <a href="#contact" class="link-hover">sudo_contact</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section id="top" class="min-h-screen flex flex-col justify-center px-4 pt-20 pb-10 relative">
+    <div class="container mx-auto max-w-4xl">
+        <div class="terminal-window shadow-lg">
+            <div class="terminal-header">
+                <div class="dot bg-red-500"></div>
+                <div class="dot bg-yellow-500"></div>
+                <div class="dot bg-green-500"></div>
+                <span class="text-terminal-dim ml-2 text-xs">root@nnt: ~</span>
+            </div>
+            <div class="p-6 md:p-8">
+                <p class="text-terminal-dim">$ ./init_profile.sh</p>
+                <div class="mt-4">
+                    <h1 data-text="NITYANAND_THAKUR" class="glitch text-3xl md:text-5xl font-bold tracking-wider mb-4">
+                        NITYANAND_THAKUR
+                    </h1>
+
+                    <div id="typed-output" class="text-matrix text-base md:text-lg min-h-[100px]"></div>
+                    <span class="cursor"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 mt-8 text-xs">
+            <a href="#projects" class="border border-matrix-dark text-matrix px-4 py-2 hover:bg-matrix-dark hover:text-black transition-all flex items-center">
+                <span class="mr-2">[ 1 ]</span> cat projects.log
+            </a>
+            <a href="mailto:tnityanand523@gmail.com" class="border border-terminal-dim text-terminal-text px-4 py-2 hover:border-matrix hover:text-matrix transition-all flex items-center">
+                <span class="mr-2">[ 2 ]</span> execute ./contact.sh
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- About / Skills -->
+<section class="py-20 px-4 border-t border-matrix-dark/20">
+    <div class="container mx-auto max-w-4xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-2">$ cat about.txt</p>
+            <h2 class="text-2xl text-matrix mb-6 border-b border-matrix-dark/20 pb-2">> SYSTEM_INFO</h2>
+            <p class="leading-relaxed text-terminal-text mb-8">
+                B.Tech CSE student @ VIT Vellore (Class of 2028). I build systems from the metal up — compiling Linux kernels, wiring BGP, and shipping backend services in Go and Rust. I run most of my own infrastructure, reverse-engineer consumer apps to understand how they tick, and document the journey in writing. Off-keyboard: fountain pens and cooking.
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <h3 class="text-matrix mb-2">// LANGUAGES</h3>
+                    <ul class="space-y-1 text-terminal-dim">
+                        <li>Go</li>
+                        <li>Rust</li>
+                        <li>Python</li>
+                        <li>C++ / Java</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-matrix mb-2">// INFRA</h3>
+                    <ul class="space-y-1 text-terminal-dim">
+                        <li>Linux Kernel</li>
+                        <li>Docker</li>
+                        <li>AWS S3</li>
+                        <li>Wireguard / Bird</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-matrix mb-2">// SECURITY</h3>
+                    <ul class="space-y-1 text-terminal-dim">
+                        <li>Reverse Engineering</li>
+                        <li>PCAPDroid</li>
+                        <li>Burp Suite</li>
+                        <li>Frida</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects -->
+<section id="projects" class="py-20 px-4 border-t border-matrix-dark/20">
+    <div class="container mx-auto max-w-4xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-2">$ ls -la ~/projects/</p>
+            <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> EXECUTABLES</h2>
+
+            <div class="space-y-4">
+                {% for repo in repos %}
+                <a href="{{ repo.url }}" target="_blank" rel="noopener noreferrer" class="block border border-terminal-dim/20 hover:border-matrix p-4 transition-all group">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-lg text-terminal-text group-hover:text-matrix">{{ repo.name }}</h3>
+                        <span class="text-xs text-terminal-dim">{{ repo.stargazer_count }} ★</span>
+                    </div>
+                    <p class="text-xs text-terminal-dim mb-2">{{ repo.description }}</p>
+                    <span class="text-matrix text-xs">-> {{ repo.url }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Timeline -->
+<section id="timeline" class="py-20 px-4 border-t border-matrix-dark/20">
+    <div class="container mx-auto max-w-4xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-2">$ git log --oneline</p>
+            <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> COMMIT_HISTORY</h2>
+
+            <div class="space-y-6 relative border-l border-matrix-dark/20 pl-8">
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
+                    <span class="text-matrix text-xs">[July 2024] HEAD~5</span>
+                    <h3 class="text-lg text-terminal-text">Leetcode Journey Begins</h3>
+                    <p class="text-terminal-dim text-xs">Registered on Leetcode. Current problems solved {{ leetcode_problems }}</p>
+                </div>
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
+                    <span class="text-matrix text-xs">[Oct 2024] HEAD~4</span>
+                    <h3 class="text-lg text-terminal-text">Codeforces Journey Begins</h3>
+                    <p class="text-terminal-dim text-xs">Registered on Codeforces. Current rating is {{ rating }} and max rating is {{ max_rating }}</p>
+                </div>
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
+                    <span class="text-matrix text-xs">[Nov 2025] HEAD~3</span>
+                    <h3 class="text-lg text-terminal-text">Maithili TTS Models on HuggingFace</h3>
+                    <p class="text-terminal-dim text-xs">Failed attempt to Fine-tuned Facebook MMS-TTS for Maithili language (mms-tts-mai-finetuned-v2, 41M params.</p>
+                </div>
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
+                    <span class="text-matrix text-xs">[Jan 2026] HEAD~2</span>
+                    <h3 class="text-lg text-terminal-text">Self-Hosting & Blogging</h3>
+                    <p class="text-terminal-dim text-xs">Launched blog.lsnnt.dev. Published custom DDns Script in Rust and Vande Bharat train data extraction write-ups.</p>
+                </div>
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
+                    <span class="text-matrix text-xs">[May 2026] HEAD~1</span>
+                    <h3 class="text-lg text-terminal-text">Spotify Banner & Chotadhobi RE</h3>
+                    <p class="text-terminal-dim text-xs">Released spotify-banner-for-github (Go). Reverse engineered Chotadhobi laundry app and documented API.</p>
+                </div>
+                <div class="fade-in relative">
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix glow"></div>
+                    <span class="text-matrix text-xs">[Jun 2026] HEAD</span>
+                    <h3 class="text-lg text-terminal-text">Systems Engineering Deep Dive</h3>
+                    <p class="text-terminal-dim text-xs">Compiled Linux kernel + BusyBox webserver. Updated ntranscrybe (Rust) for sub-second macOS captions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Writing -->
+<section id="writing" class="py-20 px-4 border-t border-matrix-dark/20">
+    <div class="container mx-auto max-w-4xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-2">$ tail -n 4 /var/log/blog.log</p>
+            <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> WRITINGS</h2>
+
+            <div class="space-y-4">
+                <a href="https://blog.lsnnt.dev/making-of-ntranscribe" target="_blank" rel="noopener noreferrer" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
+                    <span class="text-matrix text-xs">2026-07-01</span>
+                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">Making of ntranscribe</h3>
+                </a>
+                <a href="https://blog.lsnnt.dev/making-an-http-server-very-close-to-computer" target="_blank" rel="noopener noreferrer" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
+                    <span class="text-matrix text-xs">2026-06-22</span>
+                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">Making an HTTP server very close to computer</h3>
+                </a>
+                <a href="https://blog.lsnnt.dev/i-built-a-spotify-recently-played-banner-for-github-without-registering-an-oauth-app" target="_blank" rel="noopener noreferrer" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
+                    <span class="text-matrix text-xs">2026-05-29</span>
+                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">I built a Spotify recently-played banner for GitHub — without OAuth</h3>
+                </a>
+                <a href="https://blog.lsnnt.dev/how-do-i-reverse-engineered-chotadhobi-app" target="_blank" rel="noopener noreferrer" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
+                    <span class="text-matrix text-xs">2026-05-01</span>
+                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">How do I reverse engineered Chotadhobi app</h3>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact / Footer -->
+<footer id="contact" class="py-32 px-4 border-t border-matrix-dark/20 relative">
+    <div class="container mx-auto max-w-4xl text-center">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-4">$ sudo ./establish_connection.sh --target "SRE/Infra/Security"</p>
+            <h2 class="text-3xl md:text-4xl text-matrix mb-6 glow" data-text="[ INITIALIZE_CONNECTION ]" class="glitch">[ INITIALIZE_CONNECTION ]</h2>
+
+            <div class="flex flex-col items-center gap-4">
+                <a href="mailto:tnityanand523@gmail.com" class="text-lg text-terminal-text border border-matrix px-6 py-3 hover:bg-matrix hover:text-black transition-all w-full max-w-md">
+                    > tnityanand523@gmail.com
+                </a>
+                <div class="flex gap-4 text-xs text-terminal-dim mt-4">
+                    <a href="https://github.com/lsnnt" target="_blank" rel="noopener noreferrer" class="link-hover">[ GITHUB ]</a>
+                    <a href="https://in.linkedin.com/in/lsnnt" target="_blank" rel="noopener noreferrer" class="link-hover">[ LINKEDIN ]</a>
+                    <a href="https://blog.lsnnt.dev" target="_blank" rel="noopener noreferrer" class="link-hover">[ BLOG ]</a>
+                    <a href="https://huggingface.co/lsnnt" target="_blank" rel="noopener noreferrer" class="link-hover">[ HUGGINGFACE ]</a>
+                    <a href="https://bsky.app/profile/lsnnt.dev" target="_blank" rel="noopener noreferrer" class="link-hover">[ BLUESKY ]</a>
+                    <a href="https://t.me/cdnnt" target="_blank" rel="noopener noreferrer" class="link-hover">[ TELEGRAM ]</a>
+                    <a href="https://discord.com/users/1337121082141966397" target="_blank" rel="noopener noreferrer" class="link-hover">[ DISCORD ]</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-32 text-center text-xs text-terminal-dim">
+        <p>> Session terminated. Connection closed.</p>
+        <p class="mt-2">© 2026 Nityanand Thakur // Built from scratch.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script>
+    // Intersection Observer for fade-in animations
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Typewriter effect for Hero section
+    const text = `> Loading profile...
+        > User: nnt
+> Role: SRE / Infra / Security-leaning Systems Engineer
+> Education: B.Tech CSE @ VIT Vellore '28
+> Focus: Building systems from the metal up — kernels, BGP, and backend services.
+> Status: [ ONLINE ] Available for work`;
+
+    let i = 0;
+    const speed = 25;
+    const output = document.getElementById('typed-output');
+
+    function typeWriter() {
+        if (i < text.length) {
+            let char = text.charAt(i);
+            // Add color formatting
+            if (char === '>') {
+                output.innerHTML += `<br><span class="text-matrix-dark">></span>`;
+            } else if (text.substring(i, i+6) === 'ONLINE') {
+                output.innerHTML += `<span class="text-matrix glow">ONLINE</span>`;
+                i += 5; // skip the rest of ONLINE
+            }
+            else {
+                output.innerHTML += char;
+            }
+            i++;
+            setTimeout(typeWriter, speed);
+        } else {
+            // Keep cursor blinking at the end
+            const cursorSpan = document.querySelector('.cursor');
+            if (cursorSpan) cursorSpan.style.display = 'inline-block';
+        }
+    }
+
+    // Start typing animation shortly after page load
+    window.addEventListener('load', () => {
+        setTimeout(typeWriter, 800);
+    });
+</script>
+</body>
+</html>
