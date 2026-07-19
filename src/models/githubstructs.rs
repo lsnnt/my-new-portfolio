@@ -21,7 +21,7 @@ pub struct PinnedItems {
     pub nodes: Vec<Repo>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Repo {
     pub name: String,
     #[serde(default)]
