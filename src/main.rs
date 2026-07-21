@@ -4,6 +4,7 @@ pub mod state;
 
 use crate::libs::lcapi::lcapi;
 use crate::libs::rating::rating;
+use crate::libs::mblog::getblog;
 use crate::models::githubstructs::Repo;
 use crate::state::AppState;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
@@ -11,6 +12,7 @@ use askama::Template;
 use libs::getpinnedrepo;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use crate::models::hblogs::Blogs;
 
 type SharedState = Arc<RwLock<AppState>>;
 
@@ -21,6 +23,7 @@ struct IndexTemplate {
     rating: u16,
     max_rating: u16,
     leetcode_problems: u16,
+    blogs: Vec<Blogs>,
 }
 
 #[get("/")]
@@ -33,6 +36,7 @@ async fn hello(
         rating : dta.rating.clone(),
         max_rating: dta.max_rating.clone(),
         leetcode_problems: dta.leetcode_problems.clone(),
+        blogs: dta.blogs.clone(),
     };
     let body = hello.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -44,17 +48,20 @@ async fn update_loop(state: SharedState) -> Result<(), Box<dyn std::error::Error
     loop {
         interval.tick().await;
         let repos = getpinnedrepo::get_pinned_repo().await?;
-
+        getblog().await?;
         let (rating, max_rating) = rating().await?;
 
         let leetcode_problems = lcapi().await?;
 
         let mut data = state.write().await;
+        let vblog = getblog().await?;
 
         data.repos = repos;
         data.rating = rating;
         data.max_rating = max_rating;
         data.leetcode_problems = leetcode_problems;
+        data.blogs = vblog;
+
     }
 }
 
@@ -66,6 +73,7 @@ async fn main() -> std::io::Result<()> {
         rating: 0,
         max_rating: 0,
         leetcode_problems: 0,
+        blogs: vec![],
     }));
 
     {
@@ -79,7 +87,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello)
             .app_data(web::Data::new(state.clone()))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 8082))?
     .run()
     .await
 }
