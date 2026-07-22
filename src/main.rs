@@ -43,7 +43,7 @@ async fn hello(
 }
 
 async fn update_loop(state: SharedState) -> Result<(), Box<dyn std::error::Error>> {
-    let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
+    let mut interval = tokio::time::interval(std::time::Duration::from_secs(30 * 60));
 
     loop {
         interval.tick().await;
