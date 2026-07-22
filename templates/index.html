@@ -416,10 +416,55 @@
             </div>
         </div>
     </div>
+    <br>
+    <br>
+    <br>
+    <br>
+
+            <!-- Hidden Identities & Crypto Terminal -->
+        <div class="container mx-auto max-w-2xl mt-40 px-4">
+            <p class="text-terminal-dim text-xs sm:text-sm mb-4 break-all">$ cat ~/.local/share/identities.txt</p>
+            
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="dot bg-red-500"></div>
+                    <div class="dot bg-yellow-500"></div>
+                    <div class="dot bg-green-500"></div>
+                    <span class="text-terminal-dim ml-2 text-xs">identities.txt</span>
+                </div>
+                <div class="p-4 sm:p-6 text-left text-xs sm:text-sm text-terminal-dim overflow-x-auto">
+                    
+                    <p class="text-matrix mb-2"># PRIVACY_NETWORKS</p>
+                    <p>> i2p : <a href="http://lsnnt.i2p/" class="link-hover break-all">http://lsnnt.i2p/</a></p>
+                    <p>> Tor : <a href="http://lsnntdsjtmcmvkupuxa4orwq4zucnncspn6ipuv2sqcgta5khtqpnjad.onion/" class="link-hover break-all">http://lsnntdsjtmcmvkupuxa4orwq4zucnncspn6ipuv2sqcgta5khtqpnjad.onion/</a></p>
+                    <p>> i2p (base32) : <a href="http://wbllwk2u7by3r4xl46xcx2ukvvzx73p4jjgfm7wuzoqea2b5423a.b32.i2p/" class="link-hover break-all">http://wbllwk2u7by3r4xl46xcx2ukvvzx73p4jjgfm7wuzoqea2b5423a.b32.i2p/</a></p>
+
+                    <div class="my-4 border-t border-matrix-dark/20"></div>
+
+                    <p class="text-matrix mb-2"># CRYPTO_WALLETS [DONATIONS]</p>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-terminal-dim">$ BTC (Bitcoin):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors">bc1qmajetnn7csynlu6sr6vxa7xcvga0gjkrtvld9f</p>
+                        </div>
+                        <!-- <div>
+                            <p class="text-terminal-dim">$ XMR (Monero):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors"></p>
+                        </div> -->
+                        <div>
+                            <p class="text-terminal-dim">$ ETH (Ethereum):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors">0xdead00af62e6DBDc5249647963c6FB67f3B4Ef32</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     <div class="mt-20 text-center text-xs text-terminal-dim">
-        <p>> Session terminated. Connection closed.</p>
+        <p class="mt-2">> Session terminated. Connection closed.</p>
         <p class="mt-2">© 2026 Nityanand Thakur // Built from scratch.</p>
     </div>
+    
 </footer>
 <!-- Scripts -->
 <script>
