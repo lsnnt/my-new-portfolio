@@ -11,6 +11,7 @@ use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use askama::Template;
 use libs::getpinnedrepo;
 use std::sync::Arc;
+use actix_web::middleware::Compress;
 use tokio::sync::RwLock;
 use crate::models::hblogs::Blogs;
 
@@ -84,6 +85,7 @@ async fn main() -> std::io::Result<()> {
     }
     HttpServer::new(move || {
         App::new()
+            .wrap(Compress::default())
             .service(hello)
             .app_data(web::Data::new(state.clone()))
     })
