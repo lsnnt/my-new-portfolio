@@ -1,8 +1,7 @@
+use reqwest::Client;
 use crate::models::lcmodel::LCResponse;
 
-pub async fn lcapi() -> Result<u16, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::builder()
-        .build()?;
+pub async fn lcapi(client: &Client) -> Result<u16, Box<dyn std::error::Error+Send+Sync+'static>> {
 
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert("Content-Type", "application/json".parse()?);

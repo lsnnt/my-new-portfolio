@@ -9,10 +9,11 @@ use crate::models::githubstructs::Repo;
 use crate::state::AppState;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use askama::Template;
-use libs::getpinnedrepo;
 use std::sync::Arc;
 use actix_web::middleware::Compress;
 use tokio::sync::RwLock;
+use tokio::try_join;
+use crate::libs::getpinnedrepo::get_pinned_repo;
 use crate::models::hblogs::Blogs;
 
 type SharedState = Arc<RwLock<AppState>>;
@@ -43,26 +44,39 @@ async fn hello(
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
 
-async fn update_loop(state: SharedState) -> Result<(), Box<dyn std::error::Error>> {
-    let mut interval = tokio::time::interval(std::time::Duration::from_secs(30 * 60));
-
+async fn update_loop(state: SharedState) {
+    let mut interval = tokio::time::interval(std::time::Duration::from_secs(10*60 ));
+    let client = reqwest::Client::new();
     loop {
+        println!("Updating...");
         interval.tick().await;
-        let repos = getpinnedrepo::get_pinned_repo().await?;
-        getblog().await?;
-        let (rating, max_rating) = rating().await?;
 
-        let leetcode_problems = lcapi().await?;
-
-        let mut data = state.write().await;
-        let vblog = getblog().await?;
-
-        data.repos = repos;
-        data.rating = rating;
-        data.max_rating = max_rating;
-        data.leetcode_problems = leetcode_problems;
-        data.blogs = vblog;
-
+        match try_join!(
+        get_pinned_repo(&client),
+        rating(&client),
+        lcapi(&client),
+        getblog(&client),
+    ) {
+            Ok((repos, (rating, max_rating), lc, blogs)) => {
+                println!(
+                    "repos={}, rating={}, max={}, lc={}, blogs={}",
+                    repos.len(),
+                    rating,
+                    max_rating,
+                    lc,
+                    blogs.len()
+                );
+                let mut data = state.write().await;
+                data.repos = repos;
+                data.rating = rating;
+                data.max_rating = max_rating;
+                data.leetcode_problems = lc;
+                data.blogs = blogs;
+            }
+            Err(e) => {
+                eprintln!("update failed: {e}");
+            }
+        }
     }
 }
 
@@ -80,7 +94,7 @@ async fn main() -> std::io::Result<()> {
     {
         let state_clone = state.clone();
         tokio::spawn(async move {
-            update_loop(state_clone).await.expect("TODO: panic message");
+            update_loop(state_clone).await;
         });
     }
     HttpServer::new(move || {

@@ -1,10 +1,9 @@
+use reqwest::Client;
 use rss::Channel;
 use crate::models::hblogs::Blogs;
-pub async fn getblog() -> Result<Vec<Blogs>,Box<dyn std::error::Error>> {
-    let content = reqwest::get("https://blog.lsnnt.dev/rss.xml")
-        .await?
-        .bytes()
-        .await?;
+pub async fn getblog(client: &Client) -> Result<Vec<Blogs>,Box<dyn std::error::Error+Send+Sync+'static>> {
+    let content = client.get("https://blog.lsnnt.dev/rss.xml").send().await?.bytes().await?;
+       
     let channel = Channel::read_from(&content[..])?;
     let vblogs: Vec<Blogs> = channel
         .items()

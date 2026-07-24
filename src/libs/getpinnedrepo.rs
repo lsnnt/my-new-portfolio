@@ -1,9 +1,9 @@
+use reqwest::Client;
 use serde_json::json;
 use crate::models::githubstructs::{GithubResponse, Repo};
 
-pub async fn get_pinned_repo() -> Result<Vec<Repo>, Box<dyn std::error::Error>> {
+pub async fn get_pinned_repo(client: &Client) -> Result<Vec<Repo>, Box<dyn std::error::Error+Send+Sync+'static>> {
     let authtoken = std::env::var("GT_TOKEN")?;
-    let client = reqwest::Client::new();
 
     let query = r#"
         query($login: String!) {

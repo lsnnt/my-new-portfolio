@@ -1,6 +1,6 @@
+use reqwest::Client;
 use crate::models::cfstruct::CFResponse;
-pub async fn rating() -> Result<(u16, u16), Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
+pub async fn rating(client: &Client) -> Result<(u16, u16), Box<dyn std::error::Error+Send+Sync+'static>> {
     let resp = client
         .get("https://codeforces.com/api/user.info?handles=lsnnt")
         .send()
