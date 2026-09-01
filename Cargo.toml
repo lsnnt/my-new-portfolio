@@ -2,6 +2,7 @@
 name = "my-portfolio"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/lsnnt/my-new-portfolio"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -11,3 +12,10 @@ reqwest = { version = "0.13.4", features = ["json"] }
 serde_json = "1.0.150"
 serde = { version = "1.0.229",features = ["derive"] }
 rss = "2.1.0"
+
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
