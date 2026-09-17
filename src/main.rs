@@ -7,7 +7,7 @@ use crate::libs::rating::rating;
 use crate::libs::mblog::getblog;
 use crate::models::githubstructs::Repo;
 use crate::state::AppState;
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
+use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use askama::Template;
 use std::sync::Arc;
 use actix_web::middleware::Compress;
@@ -28,7 +28,6 @@ struct IndexTemplate<'a> {
     blogs: &'a Vec<Blogs>,
 }
 
-#[get("/")]
 async fn hello(
     state: web::Data<SharedState>,
 ) -> Result<impl Responder, Box<dyn std::error::Error>> {
@@ -43,6 +42,7 @@ async fn hello(
     let body = hello.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
 }
+
 
 async fn update_loop(state: SharedState) {
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(10*60 ));
@@ -100,7 +100,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(Compress::default())
-            .service(hello)
+            .default_service(web::to(hello))
             .app_data(web::Data::new(state.clone()))
     })
     .bind(("127.0.0.1", 8082))?
