@@ -1270,7 +1270,7 @@ dependencies = [
 
 [[package]]
 name = "my-portfolio"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "actix-web",
  "askama",
