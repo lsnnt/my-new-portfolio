@@ -111,42 +111,14 @@
             <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> COMMIT_HISTORY</h2>
 
             <div class="space-y-6 relative border-l border-matrix-dark/20 pl-8">
+                {% for entry in timeline %}
                 <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
-                    <span class="text-matrix text-xs">[July 2024] HEAD~5</span>
-                    <h3 class="text-lg text-terminal-text">Leetcode Journey Begins</h3>
-                    <p class="text-terminal-dim text-xs">Registered on Leetcode. Current problems solved {{ leetcode_problems }}</p>
+                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full {% if loop.last %}bg-matrix glow{% else %}bg-matrix-dark{% endif %}"></div>
+                    <span class="text-matrix text-xs">[{{ entry.date }}] {{ entry.head }}</span>
+                    <h3 class="text-lg text-terminal-text">{{ entry.title }}</h3>
+                    <p class="text-terminal-dim text-xs">{{ entry.body }}{% if entry.metric == "codeforces" %} Current rating is {{ rating }} and max rating is {{ max_rating }}{% endif %}{% if entry.metric == "leetcode" %} Current problems solved {{ leetcode_problems }}{% endif %}{% if entry.metric == "atcoder" %} Current rating is {{ atcoder_rating }} and max rating is {{ atcoder_max_rating }}{% endif %}</p>
                 </div>
-                <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
-                    <span class="text-matrix text-xs">[Oct 2024] HEAD~4</span>
-                    <h3 class="text-lg text-terminal-text">Codeforces Journey Begins</h3>
-                    <p class="text-terminal-dim text-xs">Registered on Codeforces. Current rating is {{ rating }} and max rating is {{ max_rating }}</p>
-                </div>
-                <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
-                    <span class="text-matrix text-xs">[Nov 2025] HEAD~3</span>
-                    <h3 class="text-lg text-terminal-text">Maithili TTS Models on HuggingFace</h3>
-                    <p class="text-terminal-dim text-xs">Failed attempt to Fine-tuned Facebook MMS-TTS for Maithili language (mms-tts-mai-finetuned-v2, 41M params.</p>
-                </div>
-                <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
-                    <span class="text-matrix text-xs">[Jan 2026] HEAD~2</span>
-                    <h3 class="text-lg text-terminal-text">Self-Hosting & Blogging</h3>
-                    <p class="text-terminal-dim text-xs">Launched blog.lsnnt.dev. Published custom DDns Script in Rust and Vande Bharat train data extraction write-ups.</p>
-                </div>
-                <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix-dark"></div>
-                    <span class="text-matrix text-xs">[May 2026] HEAD~1</span>
-                    <h3 class="text-lg text-terminal-text">Spotify Banner & Chotadhobi RE</h3>
-                    <p class="text-terminal-dim text-xs">Released spotify-banner-for-github (Go). Reverse engineered Chotadhobi laundry app and documented API.</p>
-                </div>
-                <div class="fade-in relative">
-                    <div class="absolute -left-[33px] top-1 h-3 w-3 rounded-full bg-matrix glow"></div>
-                    <span class="text-matrix text-xs">[Jun 2026] HEAD</span>
-                    <h3 class="text-lg text-terminal-text">Systems Engineering Deep Dive</h3>
-                    <p class="text-terminal-dim text-xs">Compiled Linux kernel + BusyBox webserver. Updated ntranscrybe (Rust) for sub-second macOS captions.</p>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>

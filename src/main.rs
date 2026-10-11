@@ -4,11 +4,14 @@ pub mod state;
 
 use std::path::Path;
 
+use crate::libs::atcoder::atcoder;
 use crate::libs::blogstore::load_posts;
 use crate::libs::lcapi::lcapi;
 use crate::libs::rating::rating;
+use crate::libs::timelinestore::load_timeline;
 use crate::models::blogpost::BlogPost;
 use crate::models::githubstructs::Repo;
+use crate::models::timeline::TimelineEntry;
 use crate::state::AppState;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use askama::Template;
@@ -30,7 +33,10 @@ struct IndexTemplate<'a> {
     rating: &'a u16,
     max_rating: &'a u16,
     leetcode_problems: &'a u16,
+    atcoder_rating: &'a u16,
+    atcoder_max_rating: &'a u16,
     posts: &'a [BlogPost],
+    timeline: &'a Vec<TimelineEntry>,
 }
 
 #[derive(Template)]
@@ -55,7 +61,10 @@ async fn hello(
         rating : &dta.rating,
         max_rating: &dta.max_rating,
         leetcode_problems: &dta.leetcode_problems,
+        atcoder_rating: &dta.atcoder_rating,
+        atcoder_max_rating: &dta.atcoder_max_rating,
         posts: latest,
+        timeline: &dta.timeline,
     };
     let body = hello.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -97,8 +106,8 @@ async fn update_loop(state: SharedState) {
     let mut interval = tokio::time::interval(std::time::Duration::from_secs(10*60 ));
     let client = reqwest::Client::new();
     loop {
-        println!("Updating...");
         interval.tick().await;
+        println!("Updating...");
 
         match try_join!(
         get_pinned_repo(&client),
@@ -123,6 +132,20 @@ async fn update_loop(state: SharedState) {
                 eprintln!("update failed: {e}");
             }
         }
+
+        // AtCoder is scraped from HTML, so keep it separate: a breakage there
+        // must not stop the GitHub/Codeforces/LeetCode updates above.
+        match atcoder(&client).await {
+            Ok((atcoder_rating, atcoder_max_rating)) => {
+                println!("atcoder: rating={atcoder_rating}, max={atcoder_max_rating}");
+                let mut data = state.write().await;
+                data.atcoder_rating = atcoder_rating;
+                data.atcoder_max_rating = atcoder_max_rating;
+            }
+            Err(e) => {
+                eprintln!("atcoder update failed: {e}");
+            }
+        }
     }
 }
 
@@ -133,12 +156,19 @@ async fn main() -> std::io::Result<()> {
     let posts = load_posts(Path::new(&blog_dir));
     println!("blog: loaded {} post(s) from {blog_dir}", posts.len());
 
+    let timeline_dir = std::env::var("TIMELINE_DIR").unwrap_or_else(|_| "content/timeline".to_string());
+    let timeline = load_timeline(Path::new(&timeline_dir));
+    println!("timeline: loaded {} entr(y/ies) from {timeline_dir}", timeline.len());
+
     let state = Arc::new(RwLock::new(AppState {
         repos: vec![],
         rating: 0,
         max_rating: 0,
         leetcode_problems: 0,
+        atcoder_rating: 0,
+        atcoder_max_rating: 0,
         posts,
+        timeline,
     }));
 
     {
