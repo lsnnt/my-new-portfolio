@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}~/blog — nnt@portfolio:~${% endblock %}
+{% block description %}Blog posts and systems write-ups by Nityanand Thakur — kernels, BGP, infra, reverse engineering.{% endblock %}
+
+{% block navlinks %}
+<a href="/" class="link-hover"><span class="hidden sm:inline">~/</span>home</a>
+<a href="/blog" class="text-matrix glow">~/blog</a>
+<a href="/#projects" class="link-hover"><span class="hidden sm:inline">~/</span>projects</a>
+<a href="/#contact" class="link-hover">contact</a>
+{% endblock %}
+
+{% block content %}
+<!-- Blog Index -->
+<section class="pt-28 pb-16 px-4 border-b border-matrix-dark/20">
+    <div class="container mx-auto max-w-4xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim mb-2">$ ls -la ~/blog/</p>
+            <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> BLOG_ENTRIES</h2>
+
+            <div class="space-y-4">
+                {% for post in posts %}
+                <a href="/blog/{{ post.slug }}" class="fade-in block border border-terminal-dim/20 hover:border-matrix p-4 transition-all group">
+                    <div class="flex justify-between items-start gap-4 mb-1">
+                        <h3 class="text-lg text-terminal-text group-hover:text-matrix">{{ post.title }}</h3>
+                        <span class="text-xs text-terminal-dim whitespace-nowrap">{{ post.date }}</span>
+                    </div>
+                    <p class="text-xs text-terminal-dim mb-2">{{ post.description }}</p>
+                    <span class="text-matrix text-xs">-> /blog/{{ post.slug }}</span>
+                </a>
+                {% endfor %}
+                {% if posts.len() == 0 %}
+                <div class="terminal-window p-6 text-terminal-dim text-sm">
+                    <p>$ # no posts yet.</p>
+                    <p class="mt-2"># drop a markdown file into <span class="text-matrix">content/blog/</span> and restart to publish.</p>
+                    <span class="cursor"></span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
