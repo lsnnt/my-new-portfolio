@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}nnt@portfolio:~${% endblock %}</title>
+    <meta name="description" content="{% block description %}SRE / Infra / Security-leaning Systems Engineer. Building systems from the metal up — kernels, BGP, and backend services.{% endblock %}">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        matrix: {
+                            DEFAULT: '#00ff41',
+                            dark: '#008f11',
+                            glow: '#39ff14'
+                        },
+                        terminal: {
+                            bg: '#0a0a0a',
+                            black: '#000000',
+                            text: '#e4e4e4',
+                            dim: '#6e6e6e'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        crt: ['VT323', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styles */
+        body {
+            background-color: #000000;
+            font-family: 'JetBrains Mono', monospace;
+            color: #e4e4e4;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* CRT Flicker */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+        @keyframes flicker { 0% { opacity: 0.27861; } 5% { opacity: 0.34769; } 10% { opacity: 0.23604; } 15% { opacity: 0.90626; } 20% { opacity: 0.18128; } 25% { opacity: 0.83891; } 30% { opacity: 0.65583; } 35% { opacity: 0.67807; } 40% { opacity: 0.26559; } 45% { opacity: 0.84693; } 50% { opacity: 0.96019; } 55% { opacity: 0.08594; } 60% { opacity: 0.20313; } 65% { opacity: 0.71988; } 70% { opacity: 0.53455; } 75% { opacity: 0.37288; } 80% { opacity: 0.71428; } 85% { opacity: 0.70419; } 90% { opacity: 0.7003; } 95% { opacity: 0.36108; } 100% { opacity: 0.24387; } }
+
+        /* Text Glitch Effect */
+        .glitch {
+            position: relative;
+            color: #fff;
+            text-shadow: 0 0 5px #00ff41;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(15px, 9999px, 43px, 0); }
+            20% { clip: rect(30px, 9999px, 16px, 0); }
+            40% { clip: rect(92px, 9999px, 65px, 0); }
+            60% { clip: rect(4px, 9999px, 18px, 0); }
+            80% { clip: rect(72px, 9999px, 20px, 0); }
+            100% { clip: rect(44px, 9999px, 54px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(78px, 9999px, 93px, 0); }
+            20% { clip: rect(45px, 9999px, 25px, 0); }
+            40% { clip: rect(2px, 9999px, 12px, 0); }
+            60% { clip: rect(65px, 9999px, 87px, 0); }
+            80% { clip: rect(34px, 9999px, 67px, 0); }
+            100% { clip: rect(90px, 9999px, 45px, 0); }
+        }
+
+        /* Blinking Cursor */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background-color: #00ff41;
+            animation: blink 1s steps(2) infinite;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+        /* Terminal Window */
+        .terminal-window {
+            border: 1px solid #1a1a1a;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(4px);
+        }
+        .terminal-header {
+            background: #111;
+            border-bottom: 1px solid #1a1a1a;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Hover Glow */
+        .link-hover {
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #e4e4e4;
+            border-bottom: 1px dotted transparent;
+        }
+        .link-hover:hover {
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+            border-bottom: 1px dotted #00ff41;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #111; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff41; }
+
+        /* Fade in on Scroll */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* Selection */
+        ::selection { background: #00ff41; color: #000; }
+
+        /* Blog post (markdown) content */
+        .blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4 {
+            color: #00ff41;
+            font-weight: 700;
+            line-height: 1.3;
+            margin: 1.5rem 0 0.75rem;
+        }
+        .blog-content h1 { font-size: 1.4rem; }
+        .blog-content h2 { font-size: 1.25rem; border-bottom: 1px solid rgba(0, 143, 17, 0.2); padding-bottom: 0.35rem; }
+        .blog-content h3 { font-size: 1.1rem; }
+        .blog-content h4 { font-size: 1rem; }
+        .blog-content p { margin: 0.75rem 0; color: #e4e4e4; line-height: 1.75; }
+        .blog-content a { color: #00ff41; text-decoration: none; border-bottom: 1px dotted #00ff41; }
+        .blog-content a:hover { text-shadow: 0 0 5px #00ff41; }
+        .blog-content ul, .blog-content ol { margin: 0.75rem 0 0.75rem 1.25rem; color: #e4e4e4; }
+        .blog-content ul { list-style: none; }
+        .blog-content ul li::before { content: "> "; color: #00ff41; }
+        .blog-content ol { list-style: decimal; }
+        .blog-content li { margin: 0.25rem 0; line-height: 1.6; }
+        .blog-content code {
+            background: #111;
+            color: #00ff41;
+            padding: 0.1rem 0.35rem;
+            border: 1px solid #1a1a1a;
+            font-size: 0.85em;
+        }
+        .blog-content pre {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .blog-content pre code { background: transparent; border: none; padding: 0; color: #e4e4e4; }
+        .blog-content blockquote {
+            border-left: 2px solid #008f11;
+            padding-left: 1rem;
+            color: #6e6e6e;
+            margin: 1rem 0;
+        }
+        .blog-content hr { border: none; border-top: 1px solid rgba(0, 143, 17, 0.2); margin: 1.5rem 0; }
+        .blog-content img { max-width: 100%; }
+        .blog-content table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.85em; }
+        .blog-content th, .blog-content td { border: 1px solid #1a1a1a; padding: 0.4rem 0.6rem; text-align: left; }
+        .blog-content th { color: #00ff41; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="font-mono text-sm md:text-base overflow-x-hidden">
+
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-40 bg-black border-b border-matrix-dark/30">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center text-[10px] sm:text-xs gap-2">
+        <a href="/" class="text-matrix glow">
+            [ root@nnt ]: /#
+        </a>
+        <div class="flex items-center gap-6">
+            {% block navlinks %}
+            <a href="#projects" class="link-hover"><span class="hidden sm:inline">~/</span>projects</a>
+            <a href="#timeline" class="link-hover"><span class="hidden sm:inline">~/</span>timeline</a>
+            <a href="/blog" class="link-hover"><span class="hidden sm:inline">~/</span>blog</a>
+            <a href="#contact" class="link-hover">contact</a>
+            {% endblock %}
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!-- Contact / Footer -->
+<footer id="contact" class="py-20 px-4 border-t border-matrix-dark/20 relative">
+    <div class="container mx-auto max-w-2xl">
+        <div class="fade-in">
+            <p class="text-terminal-dim text-xs sm:text-sm mb-4 break-all">$ sudo ./establish_connection.sh --target "SRE/Infra/Security"</p>
+
+            <div class="terminal-window mt-4">
+                <div class="terminal-header">
+                    <div class="dot bg-red-500"></div>
+                    <div class="dot bg-yellow-500"></div>
+                    <div class="dot bg-green-500"></div>
+                    <span class="text-terminal-dim ml-2 text-xs">contact.sh</span>
+                </div>
+                <div class="p-6 sm:p-8 text-center sm:text-left">
+                    <h2 class="text-2xl sm:text-3xl text-matrix mb-6 glow glitch" data-text="[ READY_TO_CONNECT ]">[ READY_TO_CONNECT ]</h2>
+
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-terminal-dim text-xs mb-2"># Best way to reach me:</p>
+                            <a href="mailto:tnityanand523@gmail.com" class="block w-full p-4 border border-matrix-dark hover:border-matrix hover:bg-matrix/10 transition-all group">
+                                <span class="text-terminal-dim text-xs group-hover:text-matrix">root@nnt:~$</span>
+                                <span class="text-matrix ml-2 break-all">mail tnityanand523@gmail.com</span>
+                                <span class="cursor"></span>
+                            </a>
+                            <p class="text-terminal-dim text-xs mb-2 mt-4"># Use GPG for private message :</p>
+                            <a href="https://keys.openpgp.org/vks/v1/by-fingerprint/74B98BF367A3084CC8202FAF8DFEF50F58A432A6" class="block w-full p-4 border border-matrix-dark hover:border-matrix hover:bg-matrix/10 transition-all group">
+                                <span class="text-terminal-dim text-xs group-hover:text-matrix">root@nnt:~$</span>
+                                <span class="text-matrix ml-2 break-all">gpg --auto-key-locate keyserver --locate-keys tnityanand523@gmail.com</span>
+                                <span class="cursor"></span>
+                            </a>
+                        </div>
+
+                        <div>
+                            <p class="text-terminal-dim text-xs mb-2"># Find me elsewhere:</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px] sm:text-xs">
+                                <a href="https://github.com/lsnnt" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ GITHUB ]
+                                </a>
+                                <a href="https://in.linkedin.com/in/lsnnt" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ LINKEDIN ]
+                                </a>
+                                <a href="https://blog.lsnnt.dev" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ BLOG ]
+                                </a>
+                                <a href="https://huggingface.co/lsnnt" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ HUGGINGFACE ]
+                                </a>
+                                <a href="https://codeforces.com/profile/lsnnt" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ CODEFORCES ]
+                                </a>
+                                <a href="https://leetcode.com/u/governer/" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ LEETCODE ]
+                                </a>
+                                <a href="https://atcoder.jp/users/lsnnt" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ ATCODER ]
+                                </a>
+                                <a href="https://www.codechef.com/users/nntlol" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ CODECHEF ]
+                                </a>
+                                <a href="https://discord.com/users/1337121082141966397" target="_blank" rel="noopener noreferrer" class="border border-terminal-dim/20 hover:border-matrix hover:text-matrix py-2 px-3 transition-all flex items-center justify-center">
+                                    [ DISCORD ]
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+
+            <!-- Hidden Identities & Crypto Terminal -->
+        <div class="container mx-auto max-w-2xl mt-40 px-4">
+            <p class="text-terminal-dim text-xs sm:text-sm mb-4 break-all">$ cat ~/.local/share/identities.txt</p>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="dot bg-red-500"></div>
+                    <div class="dot bg-yellow-500"></div>
+                    <div class="dot bg-green-500"></div>
+                    <span class="text-terminal-dim ml-2 text-xs">identities.txt</span>
+                </div>
+                <div class="p-4 sm:p-6 text-left text-xs sm:text-sm text-terminal-dim overflow-x-auto">
+
+                    <p class="text-matrix mb-2"># PRIVACY_NETWORKS</p>
+                    <p>> i2p : <a href="http://lsnnt.i2p/" class="link-hover break-all">http://lsnnt.i2p/</a></p>
+                    <p>> Tor : <a href="http://lsnntdsjtmcmvkupuxa4orwq4zucnncspn6ipuv2sqcgta5khtqpnjad.onion/" class="link-hover break-all">http://lsnntdsjtmcmvkupuxa4orwq4zucnncspn6ipuv2sqcgta5khtqpnjad.onion/</a></p>
+                    <p>> i2p (base32) : <a href="http:///" class="link-hover break-all">http://uefczaxzo72uwqbawjkrgm34qdole6cncvt6g43dovpfstbj7dvq.b32.i2p/</a></p>
+                    <div class="my-4 border-t border-matrix-dark/20"></div>
+
+                    <p class="text-matrix mb-2"># CRYPTO_WALLETS [DONATIONS]</p>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-terminal-dim">$ BTC (Bitcoin):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors">bc1qmajetnn7csynlu6sr6vxa7xcvga0gjkrtvld9f</p>
+                        </div>
+                        <!-- <div>
+                            <p class="text-terminal-dim">$ XMR (Monero):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors"></p>
+                        </div> -->
+                        <div>
+                            <p class="text-terminal-dim">$ ETH (Ethereum):</p>
+                            <p class="text-terminal-text break-all select-all cursor-pointer hover:text-matrix transition-colors">0xdead00af62e6DBDc5249647963c6FB67f3B4Ef32</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    <div class="mt-20 text-center text-xs text-terminal-dim">
+        <p class="mt-2">> Session terminated. Connection closed.</p>
+        <p class="mt-2">© 2026 Nityanand Thakur // Built from scratch.</p>
+    </div>
+
+</footer>
+
+<!-- Scripts -->
+<script>
+    // Intersection Observer for fade-in animations
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
