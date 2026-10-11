@@ -156,20 +156,20 @@
 <section id="writing" class="py-20 px-4 border-t border-matrix-dark/20">
     <div class="container mx-auto max-w-4xl">
         <div class="fade-in">
-            <p class="text-terminal-dim mb-2">$ tail -n {{ blogs.len() }} /var/log/blog.log</p>
+            <p class="text-terminal-dim mb-2">$ tail -n {{ posts.len() }} /var/log/blog.log</p>
             <h2 class="text-2xl text-matrix mb-8 border-b border-matrix-dark/20 pb-2">> WRITINGS</h2>
 
             <div class="space-y-4">
-                {% for blog in blogs %}
-                <a href="{{ blog.link }}" target="_blank" rel="noopener noreferrer" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
-                    <span class="text-matrix text-xs">{{ blog.date }}</span>
-                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">{{ blog.title }}</h3>
+                {% for post in posts %}
+                <a href="/blog/{{ post.slug }}" class="fade-in block border-l-2 border-transparent hover:border-matrix pl-4 transition-all group">
+                    <span class="text-matrix text-xs">{{ post.date }}</span>
+                    <h3 class="text-lg text-terminal-text group-hover:text-matrix">{{ post.title }}</h3>
                 </a>
                 {% endfor %}
             </div>
 
             <div class="mt-8 text-xs">
-                <a href="/blog" class="link-hover">cd ~/blog &nbsp;// read the blog here &rarr;</a>
+                <a href="/blog" class="link-hover">cd ~/blog &nbsp;// read all posts &rarr;</a>
             </div>
         </div>
     </div>

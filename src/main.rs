@@ -7,7 +7,6 @@ use std::path::Path;
 use crate::libs::blogstore::load_posts;
 use crate::libs::lcapi::lcapi;
 use crate::libs::rating::rating;
-use crate::libs::mblog::getblog;
 use crate::models::blogpost::BlogPost;
 use crate::models::githubstructs::Repo;
 use crate::state::AppState;
@@ -18,9 +17,11 @@ use actix_web::middleware::Compress;
 use tokio::sync::RwLock;
 use tokio::try_join;
 use crate::libs::getpinnedrepo::get_pinned_repo;
-use crate::models::hblogs::Blogs;
 
 type SharedState = Arc<RwLock<AppState>>;
+
+/// How many recent posts to surface on the homepage; the rest live behind /blog.
+const HOME_POSTS: usize = 6;
 
 #[derive(Template)] // this will generate the code...
 #[template(path = "index.html")]
@@ -29,7 +30,7 @@ struct IndexTemplate<'a> {
     rating: &'a u16,
     max_rating: &'a u16,
     leetcode_problems: &'a u16,
-    blogs: &'a Vec<Blogs>,
+    posts: &'a [BlogPost],
 }
 
 #[derive(Template)]
@@ -48,12 +49,13 @@ async fn hello(
     state: web::Data<SharedState>,
 ) -> Result<impl Responder, Box<dyn std::error::Error>> {
     let dta = state.read().await;
+    let latest = &dta.posts[..dta.posts.len().min(HOME_POSTS)];
     let hello = IndexTemplate {
         repos: &dta.repos,
         rating : &dta.rating,
         max_rating: &dta.max_rating,
         leetcode_problems: &dta.leetcode_problems,
-        blogs: &dta.blogs,
+        posts: latest,
     };
     let body = hello.render()?;
     Ok(HttpResponse::Ok().content_type("text/html").body(body))
@@ -102,23 +104,20 @@ async fn update_loop(state: SharedState) {
         get_pinned_repo(&client),
         rating(&client),
         lcapi(&client),
-        getblog(&client),
     ) {
-            Ok((repos, (rating, max_rating), lc, blogs)) => {
+            Ok((repos, (rating, max_rating), lc)) => {
                 println!(
-                    "repos={}, rating={}, max={}, lc={}, blogs={}",
+                    "repos={}, rating={}, max={}, lc={}",
                     repos.len(),
                     rating,
                     max_rating,
                     lc,
-                    blogs.len()
                 );
                 let mut data = state.write().await;
                 data.repos = repos;
                 data.rating = rating;
                 data.max_rating = max_rating;
                 data.leetcode_problems = lc;
-                data.blogs = blogs;
             }
             Err(e) => {
                 eprintln!("update failed: {e}");
@@ -139,7 +138,6 @@ async fn main() -> std::io::Result<()> {
         rating: 0,
         max_rating: 0,
         leetcode_problems: 0,
-        blogs: vec![],
         posts,
     }));
 
